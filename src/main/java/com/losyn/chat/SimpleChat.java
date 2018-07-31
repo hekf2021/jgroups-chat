@@ -10,14 +10,25 @@ import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 
 /**
- * jGroups
+ * tcp模式下:
+ * 如果是同一台机器测试,请注意在
+ * TCPPING 元素下修改 initial_hosts的配置端口:
+ * 例如:"${jgroups.tcpping.initial_hosts:192.168.19.100[7800],192.168.19.100[7801]}
+ * 如果是多台机器测试,请注意在
+ * TCPPING 元素下修改 initial_hosts的ip,端口随意:
+ * 例如:"${jgroups.tcpping.initial_hosts:192.168.19.100[7800],192.168.19.178[7800]}
+ *
+ * udp模式下:
+ * 同一台机器的不同端口(端口是动态的)可通信.
+ * 不同机器之间的ip多播可能会受到一些因素限制而造成节点之间无法彼此发现.
+ * </pre>
  */
 public class SimpleChat extends ReceiverAdapter {
     private static final String DEFULT_CONFIG_XML = "jgroups-chat-udp.xml";
     // 配置文件.
     private String confXml;
     // 集群名称.
-    private static final String CLUSTER_NAME = "WTCLOSYN-SIMPLE-CHAT";
+    private static final String CLUSTER_NAME = "mychart";
     // 字符编码
     private static final Charset CHARSET = Charset.defaultCharset();
     // 节点通道.
@@ -36,6 +47,7 @@ public class SimpleChat extends ReceiverAdapter {
         try {
             InputStream cfg = SimpleChat.class.getClassLoader().getResourceAsStream(confXml);
             channel = new JChannel(cfg);
+            //channel = new JChannel(cfg);
             //连接到集群
             channel.connect(CLUSTER_NAME);
             channel.setDiscardOwnMessages(true);
@@ -43,8 +55,10 @@ public class SimpleChat extends ReceiverAdapter {
             channel.setReceiver(this);
         }catch (IOException e){
             System.out.println("启动Chat失败！");
+            e.printStackTrace();
         }catch (Exception e){
             System.out.println("启动Chat失败！");
+            e.printStackTrace();
         }
     }
 
@@ -58,6 +72,7 @@ public class SimpleChat extends ReceiverAdapter {
             channel.send(msg);
         } catch (Exception e) {
             System.out.println("Chat发送消息失败！");
+            e.printStackTrace();
         }
     }
 
@@ -71,5 +86,6 @@ public class SimpleChat extends ReceiverAdapter {
     @Override
     public void viewAccepted(View view) {
         System.out.println("A client has changed！" + view.toString());
+
     }
 }
